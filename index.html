@@ -223,8 +223,6 @@
       <div><strong>Gesamt bezahlte Strafen:</strong> <span id="totalPaid">0</span>€</div>
       <div><strong>Gesamtbetrag:</strong> <span id="totalAmount">0</span>€</div>
     </div>
-
-    <button onclick="exportCSV()">CSV Export</button>
   </div>
 
   <script>
@@ -289,18 +287,17 @@
     }
 
     function addPenalty(playerId, label, amount) {
-  if (amount < 0) return alert("Betrag darf nicht unter 0€ liegen");
-  const player = players.find(p => p.id === playerId);
-  
-  // Holt die Bezeichnung aus dem Dropdown
-  const penaltyLabel = document.querySelector(`#penalty-${playerId} option:checked`).textContent;
+      if (amount < 0) return alert("Betrag darf nicht unter 0€ liegen");
+      const player = players.find(p => p.id === playerId);
 
-  player.penalties.push({ label: penaltyLabel, amount, paid: false });
-  player.isOpen = true;
-  renderPlayers();
-  saveData();
+      // Holt die Bezeichnung aus dem Dropdown
+      const penaltyLabel = document.querySelector(`#penalty-${playerId} option:checked`).textContent;
+
+      player.penalties.push({ label: penaltyLabel, amount, paid: false });
+      player.isOpen = true;
+      renderPlayers();
+      saveData();
     }
-
 
     function addCustomPenalty(playerId) {
       const label = document.getElementById("customPenaltyLabel").value.trim();
@@ -400,48 +397,15 @@
       const searchTerm = document.getElementById("search").value.toLowerCase();
       const container = document.getElementById("players");
       const cards = container.getElementsByClassName("player-card");
-
-      for (let card of cards) {
-        const name = card.querySelector(".header strong").textContent.toLowerCase();
-        card.style.display = name.includes(searchTerm) ? "block" : "none";
-      }
+      Array.from(cards).forEach(card => {
+        const name = card.querySelector(".header").innerText.toLowerCase();
+        if (name.includes(searchTerm)) {
+          card.style.display = "";
+        } else {
+          card.style.display = "none";
+        }
+      });
     }
-
-    function exportCSV() {
-  // Headers for CSV
-  const headers = ["Name", "Strafen"];
-  
-  // Prepare rows of player data
-  const rows = players.map(player => {
-    // Erstelle einen sicheren Text für den Spielernamen, indem Anführungszeichen durch doppelte Anführungszeichen ersetzt werden
-    const playerName = `"${player.name.replace(/"/g, '""')}"`;
-    
-    // Map die Strafen und füge sie in einer einzigen Zeichenkette zusammen, auch diese in Anführungszeichen setzen
-    const penalties = player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ");
-    const penaltyString = `"${penalties.replace(/"/g, '""')}"`;
-    
-    // Rückgabe der Zeile als Array von zitierten Werten
-    return [playerName, penaltyString];
-  });
-
-  // Create the CSV content with the header, using comma or semicolon as separator based on region
-  const separator = ",";  // Verwende Komma als Trennzeichen (für die meisten Regionen)
-  
-  let csvContent = "data:text/csv;charset=utf-8," 
-    + headers.map(header => `"${header.replace(/"/g, '""')}"`).join(separator) + "\r\n" // Headers mit Anführungszeichen
-    + rows.map(row => row.join(separator)).join("\r\n"); // Zeileninhalt
-
-  // Encode the URI and trigger the download
-  const encodedUri = encodeURI(csvContent);
-  const link = document.createElement("a");
-  link.setAttribute("href", encodedUri);
-  link.setAttribute("download", "mannschaftskasse.csv");
-  link.click();
-    }
-
-
-
-
 
     function toggleDarkMode() {
       darkMode = !darkMode;
