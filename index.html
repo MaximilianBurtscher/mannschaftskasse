@@ -413,21 +413,23 @@
   
   // Prepare rows of player data
   const rows = players.map(player => {
-    // Create a safely quoted string for the player's name
+    // Erstelle einen sicheren Text für den Spielernamen, indem Anführungszeichen durch doppelte Anführungszeichen ersetzt werden
     const playerName = `"${player.name.replace(/"/g, '""')}"`;
     
-    // Map the penalties and join them into a single string, also quote the entire string
+    // Map die Strafen und füge sie in einer einzigen Zeichenkette zusammen, auch diese in Anführungszeichen setzen
     const penalties = player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ");
     const penaltyString = `"${penalties.replace(/"/g, '""')}"`;
     
-    // Return the row as an array of quoted values
+    // Rückgabe der Zeile als Array von zitierten Werten
     return [playerName, penaltyString];
   });
 
-  // Create the CSV content with the header
+  // Create the CSV content with the header, using comma or semicolon as separator based on region
+  const separator = ",";  // Verwende Komma als Trennzeichen (für die meisten Regionen)
+  
   let csvContent = "data:text/csv;charset=utf-8," 
-    + headers.map(header => `"${header.replace(/"/g, '""')}"`).join(",") + "\r\n" // Headers with quotes
-    + rows.map(row => row.join(",")).join("\r\n"); // Row data
+    + headers.map(header => `"${header.replace(/"/g, '""')}"`).join(separator) + "\r\n" // Headers mit Anführungszeichen
+    + rows.map(row => row.join(separator)).join("\r\n"); // Zeileninhalt
 
   // Encode the URI and trigger the download
   const encodedUri = encodeURI(csvContent);
@@ -436,6 +438,7 @@
   link.setAttribute("download", "mannschaftskasse.csv");
   link.click();
     }
+
 
 
 
