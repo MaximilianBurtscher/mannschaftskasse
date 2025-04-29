@@ -289,13 +289,18 @@
     }
 
     function addPenalty(playerId, label, amount) {
-      if (amount < 0) return alert("Betrag darf nicht unter 0€ liegen");
-      const player = players.find(p => p.id === playerId);
-      player.penalties.push({ label, amount, paid: false });
-      player.isOpen = true;
-      renderPlayers();
-      saveData();
+  if (amount < 0) return alert("Betrag darf nicht unter 0€ liegen");
+  const player = players.find(p => p.id === playerId);
+  
+  // Holt die Bezeichnung aus dem Dropdown
+  const penaltyLabel = document.querySelector(`#penalty-${playerId} option:checked`).textContent;
+
+  player.penalties.push({ label: penaltyLabel, amount, paid: false });
+  player.isOpen = true;
+  renderPlayers();
+  saveData();
     }
+
 
     function addCustomPenalty(playerId) {
       const label = document.getElementById("customPenaltyLabel").value.trim();
