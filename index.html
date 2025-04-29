@@ -408,22 +408,28 @@
     }
 
     function exportCSV() {
-      const headers = ["Name", "Strafen"];
-      const rows = players.map(player => [
-        player.name,
-        player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ")
-      ]);
+  // Headers for CSV
+  const headers = ["Name", "Strafen"];
+  
+  // Prepare rows of player data
+  const rows = players.map(player => {
+    const penalties = player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ");
+    return [`"${player.name}"`, `"${penalties}"`]; // Wrap values in quotes to ensure proper CSV format
+  });
 
-      let csvContent = "data:text/csv;charset=utf-8," 
-        + headers.join(",") + "\n" 
-        + rows.map(e => e.join(",")).join("\n");
+  // Create the CSV content
+  let csvContent = "data:text/csv;charset=utf-8," 
+    + headers.map(header => `"${header}"`).join(",") + "\r\n" // Headers with quotes
+    + rows.map(row => row.join(",")).join("\r\n"); // Row data
 
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "mannschaftskasse.csv");
-      link.click();
+  // Encode the URI and trigger the download
+  const encodedUri = encodeURI(csvContent);
+  const link = document.createElement("a");
+  link.setAttribute("href", encodedUri);
+  link.setAttribute("download", "mannschaftskasse.csv");
+  link.click();
     }
+
 
     function toggleDarkMode() {
       darkMode = !darkMode;
