@@ -10,7 +10,6 @@
   <link rel="icon" href="icon.png" />
   <link rel="manifest" href="manifest.json" />
   <title>Mannschaftskasse</title>
-
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -18,12 +17,10 @@
       margin: 0;
       padding: 0;
     }
-
     body.dark-mode {
-      background-color: #333;
-      color: white;
+      background-color: #1e1e1e;
+      color: #f0f0f0;
     }
-
     .container {
       max-width: 950px;
       margin: 40px auto;
@@ -32,18 +29,16 @@
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
-
     body.dark-mode .container {
-      background-color: #444;
+      background-color: #2c2c2c;
+      color: #f0f0f0;
     }
-
     h1 {
       text-align: center;
       color: #e74c3c;
       margin-bottom: 30px;
       font-size: 36px;
     }
-
     .player-form,
     .penalty-form {
       display: flex;
@@ -51,7 +46,6 @@
       gap: 10px;
       margin-bottom: 25px;
     }
-
     input, select, button {
       padding: 10px;
       border: 1px solid #ccc;
@@ -59,11 +53,9 @@
       border-radius: 6px;
       font-size: 15px;
     }
-
     input[type="number"] {
       width: 100px;
     }
-
     button {
       background-color: #e74c3c;
       color: white;
@@ -71,11 +63,9 @@
       cursor: pointer;
       transition: background-color 0.3s;
     }
-
     button:hover {
       background-color: #c0392b;
     }
-
     .player-card {
       background-color: #fdfdfd;
       padding: 18px;
@@ -84,12 +74,11 @@
       border: 1px solid #ddd;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
-
     body.dark-mode .player-card {
-      background-color: #555;
-      color: white;
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      border-color: #666;
     }
-
     .header {
       display: flex;
       justify-content: space-between;
@@ -100,22 +89,19 @@
       border-bottom: 2px solid #e74c3c;
       padding-bottom: 6px;
     }
-
     body.dark-mode .header {
-      color: white;
+      color: #f0f0f0;
+      border-bottom-color: #f39c12;
     }
-
     .details {
       margin-top: 15px;
       display: none;
       padding-top: 10px;
       border-top: 2px solid #ddd;
     }
-
     .penalty-list {
       margin-top: 15px;
     }
-
     .penalty-item {
       display: flex;
       justify-content: space-between;
@@ -126,39 +112,40 @@
       border-radius: 4px;
       font-size: 14px;
     }
-
+    body.dark-mode .penalty-item {
+      background-color: #555;
+      color: #fff;
+    }
     .paid {
       text-decoration: line-through;
       color: #999;
       background-color: #e0e0e0;
     }
-
+    body.dark-mode .paid {
+      color: #aaa;
+      background-color: #444;
+    }
     .penalty-item button {
       margin-left: 6px;
       font-size: 13px;
     }
-
     .totals {
       margin-top: 10px;
       font-weight: bold;
       color: #2c3e50;
     }
-
     .btn-danger {
       background-color: #bd2130;
       margin-top: 10px;
     }
-
     .btn-danger:hover {
       background-color: #a71d2a;
     }
-
     .toggle-btn {
       background-color: #555;
       color: white;
       margin-top: 10px;
     }
-
     .summary {
       margin-top: 30px;
       font-size: 18px;
@@ -167,34 +154,60 @@
       padding-top: 20px;
       border-top: 2px solid #ccc;
     }
-
+    .search-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .search {
       margin-bottom: 20px;
+      flex: 1;
     }
-
     .dark-mode-toggle {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      padding: 10px;
       background-color: #555;
       color: white;
-      border: none;
+      padding: 10px;
       cursor: pointer;
       border-radius: 50%;
+    }
+    body.dark-mode .dark-mode-toggle {
+      background-color: #f0f0f0;
+      color: #1e1e1e;
+    }
+    .pin-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .pin-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      background-color: #fff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div id="pin-screen" class="pin-container">
+    <div class="pin-form">
+      <h2>Bitte PIN eingeben</h2>
+      <input type="password" id="pin-input" placeholder="PIN" />
+      <button onclick="checkPin()">Einloggen</button>
+    </div>
+  </div>
+
+  <div class="container" id="app-container" style="display: none;">
     <h1>Mannschaftskasse</h1>
-
-    <!-- Dark Mode Toggle -->
-    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
-
-    <!-- Search Bar -->
-    <div class="search">
-      <input type="text" id="search" placeholder="Spieler suchen..." oninput="searchPlayer()" />
+    <div class="search-container">
+      <div class="search">
+        <input type="text" id="search" placeholder="Spieler suchen..." oninput="searchPlayer()" />
+      </div>
+      <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
     </div>
 
     <div class="player-form">
@@ -211,13 +224,24 @@
       <div><strong>Gesamtbetrag:</strong> <span id="totalAmount">0</span>€</div>
     </div>
 
-    <!-- CSV Export Button -->
     <button onclick="exportCSV()">CSV Export</button>
   </div>
 
   <script>
     let players = [];
     let darkMode = false;
+    let appLoggedIn = false;
+
+    function checkPin() {
+      const pin = document.getElementById("pin-input").value;
+      if (pin === "1234") {
+        appLoggedIn = true;
+        document.getElementById("pin-screen").style.display = "none";
+        document.getElementById("app-container").style.display = "block";
+      } else {
+        alert("Falscher PIN. Versuche es noch einmal.");
+      }
+    }
 
     function saveData() {
       localStorage.setItem("playersData", JSON.stringify(players));
@@ -265,11 +289,25 @@
     }
 
     function addPenalty(playerId, label, amount) {
-      if (amount <= 0 || isNaN(amount)) return alert("Gültigen Betrag eingeben");
-
+      if (amount < 0) return alert("Betrag darf nicht unter 0€ liegen");
       const player = players.find(p => p.id === playerId);
       player.penalties.push({ label, amount, paid: false });
       player.isOpen = true;
+      renderPlayers();
+      saveData();
+    }
+
+    function addCustomPenalty(playerId) {
+      const label = document.getElementById("customPenaltyLabel").value.trim();
+      const amount = parseFloat(document.getElementById("customPenaltyAmount").value);
+      if (!label || isNaN(amount) || amount <= 0) {
+        return alert("Bitte eine gültige Strafe und einen Betrag eingeben.");
+      }
+      const player = players.find(p => p.id === playerId);
+      player.penalties.push({ label, amount, paid: false });
+      player.isOpen = true;
+      document.getElementById("customPenaltyLabel").value = "";
+      document.getElementById("customPenaltyAmount").value = "";
       renderPlayers();
       saveData();
     }
@@ -313,18 +351,24 @@
             <div><strong>${player.name}</strong></div>
             <div>Offen: ${player.penalties.filter(p => !p.paid).reduce((sum, p) => sum + p.amount, 0)}€</div>
           </div>
-          
           <div class="details" style="display: ${player.isOpen ? 'block' : 'none'}">
             <div class="penalty-form">
               <select id="penalty-${player.id}">
-                <option value="5">Diverses (Ball/Sachen vergessen) - 5€</option>
-                <option value="20">Trinken im Dress - 20€</option>
+                <option value="5">Diverses (Ball / Sachen vergessen) - 5€</option>
+                <option value="20">Trinken im Dress / Rauchen - 20€</option>
                 <option value="50">Gelb für Unsportlichkeit - 50€</option>
                 <option value="100">Rot für Unsportlichkeit - 100€</option>
+                <option value="20">Unentschuldigt zu spät zum Training - 20€</option>
+                <option value="50">Unentschuldigt zu spät zum Spiel - 50€</option>
+                <option value="20">Falscher Ausgehanzug - 20€</option>
               </select>
               <button onclick="addPenalty(${player.id}, 'Strafe', parseInt(document.querySelector('#penalty-${player.id}').value))">Strafe hinzufügen</button>
             </div>
-
+            <div class="penalty-form">
+              <input type="text" id="customPenaltyLabel" placeholder="Strafenbezeichnung" />
+              <input type="number" id="customPenaltyAmount" placeholder="Betrag in €" min="0" />
+              <button onclick="addCustomPenalty(${player.id})">Benutzerdefinierte Strafe hinzufügen</button>
+            </div>
             <div class="penalty-list">
               ${player.penalties.map((p, idx) => `
                 <div class="penalty-item ${p.paid ? 'paid' : ''}">
@@ -336,11 +380,9 @@
                 </div>
               `).join("")}
             </div>
-
             <div class="totals">
               <div><strong>Gesamt Strafen: </strong>${player.penalties.reduce((sum, p) => sum + p.amount, 0)}€</div>
             </div>
-
             <button class="btn-danger" onclick="deletePlayer(${player.id})">Spieler löschen</button>
           </div>
         `;
@@ -351,10 +393,13 @@
 
     function searchPlayer() {
       const searchTerm = document.getElementById("search").value.toLowerCase();
-      players.forEach(player => {
-        const card = document.querySelector(`#player-${player.id}`);
-        card.style.display = player.name.toLowerCase().includes(searchTerm) ? 'block' : 'none';
-      });
+      const container = document.getElementById("players");
+      const cards = container.getElementsByClassName("player-card");
+
+      for (let card of cards) {
+        const name = card.querySelector(".header strong").textContent.toLowerCase();
+        card.style.display = name.includes(searchTerm) ? "block" : "none";
+      }
     }
 
     function exportCSV() {
@@ -364,8 +409,8 @@
         player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ")
       ]);
 
-      let csvContent = "data:text/csv;charset=utf-8,"
-        + headers.join(",") + "\n"
+      let csvContent = "data:text/csv;charset=utf-8," 
+        + headers.join(",") + "\n" 
         + rows.map(e => e.join(",")).join("\n");
 
       const encodedUri = encodeURI(csvContent);
