@@ -413,13 +413,20 @@
   
   // Prepare rows of player data
   const rows = players.map(player => {
+    // Create a safely quoted string for the player's name
+    const playerName = `"${player.name.replace(/"/g, '""')}"`;
+    
+    // Map the penalties and join them into a single string, also quote the entire string
     const penalties = player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ");
-    return [`"${player.name}"`, `"${penalties}"`]; // Wrap values in quotes to ensure proper CSV format
+    const penaltyString = `"${penalties.replace(/"/g, '""')}"`;
+    
+    // Return the row as an array of quoted values
+    return [playerName, penaltyString];
   });
 
-  // Create the CSV content
+  // Create the CSV content with the header
   let csvContent = "data:text/csv;charset=utf-8," 
-    + headers.map(header => `"${header}"`).join(",") + "\r\n" // Headers with quotes
+    + headers.map(header => `"${header.replace(/"/g, '""')}"`).join(",") + "\r\n" // Headers with quotes
     + rows.map(row => row.join(",")).join("\r\n"); // Row data
 
   // Encode the URI and trigger the download
@@ -429,6 +436,8 @@
   link.setAttribute("download", "mannschaftskasse.csv");
   link.click();
     }
+
+
 
 
     function toggleDarkMode() {
