@@ -1,18 +1,20 @@
 {
   "name": "Mannschaftskasse",
   "short_name": "Kasse",
-  "start_url": "./",
-  "display": "standalone",
+  "description": "Verwaltung der Mannschaftskasse mit Strafen und Zahlungen",
+  "start_url": "/",
   "background_color": "#ffffff",
   "theme_color": "#e74c3c",
+  "display": "standalone",
+  "orientation": "portrait",
   "icons": [
     {
-      "src": "icon.png",
+      "src": "icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon.png",
+      "src": "icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

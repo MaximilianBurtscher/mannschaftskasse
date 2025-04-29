@@ -2,16 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1.0">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Mannschaftskasse">
-
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="icon" href="icon.png" />
   <link rel="manifest" href="manifest.json" />
-
   <title>Mannschaftskasse</title>
 
   <style>
@@ -22,6 +19,11 @@
       padding: 0;
     }
 
+    body.dark-mode {
+      background-color: #333;
+      color: white;
+    }
+
     .container {
       max-width: 950px;
       margin: 40px auto;
@@ -29,6 +31,10 @@
       background-color: #ffffff;
       border-radius: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    body.dark-mode .container {
+      background-color: #444;
     }
 
     h1 {
@@ -79,6 +85,11 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 
+    body.dark-mode .player-card {
+      background-color: #555;
+      color: white;
+    }
+
     .header {
       display: flex;
       justify-content: space-between;
@@ -88,6 +99,10 @@
       color: #2c3e50;
       border-bottom: 2px solid #e74c3c;
       padding-bottom: 6px;
+    }
+
+    body.dark-mode .header {
+      color: white;
     }
 
     .details {
@@ -138,6 +153,12 @@
       background-color: #a71d2a;
     }
 
+    .toggle-btn {
+      background-color: #555;
+      color: white;
+      margin-top: 10px;
+    }
+
     .summary {
       margin-top: 30px;
       font-size: 18px;
@@ -146,11 +167,35 @@
       padding-top: 20px;
       border-top: 2px solid #ccc;
     }
+
+    .search {
+      margin-bottom: 20px;
+    }
+
+    .dark-mode-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 10px;
+      background-color: #555;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Mannschaftskasse</h1>
+
+    <!-- Dark Mode Toggle -->
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()">🌙</button>
+
+    <!-- Search Bar -->
+    <div class="search">
+      <input type="text" id="search" placeholder="Spieler suchen..." oninput="searchPlayer()" />
+    </div>
 
     <div class="player-form">
       <input type="text" id="firstName" placeholder="Vorname" />
@@ -165,20 +210,14 @@
       <div><strong>Gesamt bezahlte Strafen:</strong> <span id="totalPaid">0</span>€</div>
       <div><strong>Gesamtbetrag:</strong> <span id="totalAmount">0</span>€</div>
     </div>
+
+    <!-- CSV Export Button -->
+    <button onclick="exportCSV()">CSV Export</button>
   </div>
 
   <script>
-    const penalties = [
-      { label: "Diverses (Ball/Sachen vergessen)", amount: 5 },
-      { label: "Trinken/Rauchen im Dress", amount: 20 },
-      { label: "Gelb für Unsportlichkeit", amount: 50 },
-      { label: "Rot für Unsportlichkeit", amount: 100 },
-      { label: "Unentschuldigt zu spät zum Training", amount: 20 },
-      { label: "Unentschuldigt zu spät zum Spiel", amount: 50 },
-      { label: "Falscher Ausgehanzug", amount: 20 },
-    ];
-
     let players = [];
+    let darkMode = false;
 
     function saveData() {
       localStorage.setItem("playersData", JSON.stringify(players));
@@ -186,7 +225,9 @@
 
     function loadData() {
       const data = localStorage.getItem("playersData");
-      if (data) players = JSON.parse(data);
+      if (data) {
+        players = JSON.parse(data);
+      }
     }
 
     function addPlayer() {
@@ -194,7 +235,13 @@
       const last = document.getElementById("lastName").value.trim();
       if (!first || !last) return alert("Vor- und Nachname eingeben");
 
-      players.push({ id: Date.now(), name: `${first} ${last}`, penalties: [], isOpen: false });
+      players.push({
+        id: Date.now(),
+        name: `${first} ${last}`,
+        penalties: [],
+        isOpen: false
+      });
+
       renderPlayers();
       saveData();
       document.getElementById("firstName").value = "";
@@ -203,7 +250,8 @@
 
     function deletePlayer(id) {
       const player = players.find(p => p.id === id);
-      if (confirm(`Spieler ${player.name} wirklich löschen?`)) {
+      const confirmDelete = confirm(`Spieler ${player.name} wirklich löschen?`);
+      if (confirmDelete) {
         players = players.filter(p => p.id !== id);
         renderPlayers();
         saveData();
@@ -217,9 +265,10 @@
     }
 
     function addPenalty(playerId, label, amount) {
+      if (amount <= 0 || isNaN(amount)) return alert("Gültigen Betrag eingeben");
+
       const player = players.find(p => p.id === playerId);
-      if (!label || isNaN(amount)) return alert("Strafe und Betrag korrekt eingeben");
-      player.penalties.push({ label, amount: parseInt(amount), paid: false });
+      player.penalties.push({ label, amount, paid: false });
       player.isOpen = true;
       renderPlayers();
       saveData();
@@ -232,13 +281,11 @@
       saveData();
     }
 
-    function deletePenalty(playerId, index) {
+    function deletePenalty(playerId, penaltyIndex) {
       const player = players.find(p => p.id === playerId);
-      if (confirm(`Strafe "${player.penalties[index].label}" löschen?`)) {
-        player.penalties.splice(index, 1);
-        renderPlayers();
-        saveData();
-      }
+      player.penalties.splice(penaltyIndex, 1);
+      renderPlayers();
+      saveData();
     }
 
     function calculateTotals() {
@@ -259,42 +306,41 @@
       const container = document.getElementById("players");
       container.innerHTML = "";
       players.forEach(player => {
-        const unpaid = player.penalties.filter(p => !p.paid).reduce((sum, p) => sum + p.amount, 0);
-        const paid = player.penalties.filter(p => p.paid).reduce((sum, p) => sum + p.amount, 0);
         const card = document.createElement("div");
         card.className = "player-card";
         card.innerHTML = `
           <div class="header" onclick="toggleDetails(${player.id})">
             <div><strong>${player.name}</strong></div>
-            <div>Offen: ${unpaid}€</div>
+            <div>Offen: ${player.penalties.filter(p => !p.paid).reduce((sum, p) => sum + p.amount, 0)}€</div>
           </div>
+          
           <div class="details" style="display: ${player.isOpen ? 'block' : 'none'}">
             <div class="penalty-form">
               <select id="penalty-${player.id}">
-                ${penalties.map(p => `<option value="${p.amount}">${p.label} - ${p.amount}€</option>`).join("")}
+                <option value="5">Diverses (Ball/Sachen vergessen) - 5€</option>
+                <option value="20">Trinken im Dress - 20€</option>
+                <option value="50">Gelb für Unsportlichkeit - 50€</option>
+                <option value="100">Rot für Unsportlichkeit - 100€</option>
               </select>
-              <button onclick="addPenalty(${player.id}, document.querySelector('#penalty-${player.id}').selectedOptions[0].text.split(' - ')[0], parseInt(document.querySelector('#penalty-${player.id}').value))">Strafe hinzufügen</button>
+              <button onclick="addPenalty(${player.id}, 'Strafe', parseInt(document.querySelector('#penalty-${player.id}').value))">Strafe hinzufügen</button>
             </div>
-            <div class="penalty-form">
-              <input id="customLabel-${player.id}" type="text" placeholder="Strafe Name">
-              <input id="customAmount-${player.id}" type="number" placeholder="Betrag" />
-              <button onclick="addPenalty(${player.id}, document.getElementById('customLabel-${player.id}').value, document.getElementById('customAmount-${player.id}').value)">Strafe hinzufügen</button>
-            </div>
+
             <div class="penalty-list">
-              ${player.penalties.map((penalty, index) => `
-                <div class="penalty-item ${penalty.paid ? 'paid' : ''}">
-                  <span>${penalty.label} - ${penalty.amount}€</span>
+              ${player.penalties.map((p, idx) => `
+                <div class="penalty-item ${p.paid ? 'paid' : ''}">
+                  <span>${p.label} - ${p.amount}€</span>
                   <div>
-                    <button onclick="togglePaid(${player.id}, ${index})">${penalty.paid ? 'Bezahlt' : 'Offen'}</button>
-                    <button onclick="deletePenalty(${player.id}, ${index})">Löschen</button>
+                    <button onclick="togglePaid(${player.id}, ${idx})">${p.paid ? 'Bezahlt' : 'Bezahlt markieren'}</button>
+                    <button onclick="deletePenalty(${player.id}, ${idx})">Löschen</button>
                   </div>
                 </div>
               `).join("")}
             </div>
+
             <div class="totals">
-              <div>Bezahlte Strafen: ${paid}€</div>
-              <div>Offene Strafen: ${unpaid}€</div>
+              <div><strong>Gesamt Strafen: </strong>${player.penalties.reduce((sum, p) => sum + p.amount, 0)}€</div>
             </div>
+
             <button class="btn-danger" onclick="deletePlayer(${player.id})">Spieler löschen</button>
           </div>
         `;
@@ -303,17 +349,39 @@
       calculateTotals();
     }
 
-    loadData();
-    renderPlayers();
-
-    // Service Worker registrieren
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js')
-          .then(reg => console.log("Service Worker registriert:", reg))
-          .catch(err => console.error("Service Worker Fehler:", err));
+    function searchPlayer() {
+      const searchTerm = document.getElementById("search").value.toLowerCase();
+      players.forEach(player => {
+        const card = document.querySelector(`#player-${player.id}`);
+        card.style.display = player.name.toLowerCase().includes(searchTerm) ? 'block' : 'none';
       });
     }
+
+    function exportCSV() {
+      const headers = ["Name", "Strafen"];
+      const rows = players.map(player => [
+        player.name,
+        player.penalties.map(p => `${p.label} (${p.amount}€)`).join(", ")
+      ]);
+
+      let csvContent = "data:text/csv;charset=utf-8,"
+        + headers.join(",") + "\n"
+        + rows.map(e => e.join(",")).join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "mannschaftskasse.csv");
+      link.click();
+    }
+
+    function toggleDarkMode() {
+      darkMode = !darkMode;
+      document.body.classList.toggle("dark-mode", darkMode);
+    }
+
+    loadData();
+    renderPlayers();
   </script>
 </body>
 </html>
